@@ -1,8 +1,8 @@
 use std::path;
 use std::vec;
 
-use error;
-use p4;
+use crate::err;
+use crate::p4;
 
 /// Synchronize the client with its view of the depot
 ///
@@ -161,7 +161,7 @@ impl<'p, 'f> SyncCommand<'p, 'f> {
     }
 
     /// Run the `sync` command.
-    pub fn run(self) -> Result<Files, error::P4Error> {
+    pub fn run(self) -> Result<Files, err::P4Error> {
         let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("sync");
         if self.force {
@@ -191,13 +191,13 @@ impl<'p, 'f> SyncCommand<'p, 'f> {
             cmd.arg(file);
         }
         let data = cmd.output().map_err(|e| {
-            error::ErrorKind::SpawnFailed
+            err::ErrorKind::SpawnFailed
                 .error()
                 .set_cause(e)
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         let (_remains, (mut items, exit)) = files_parser::files(&data.stdout).map_err(|_| {
-            error::ErrorKind::ParseFailed
+            err::ErrorKind::ParseFailed
                 .error()
                 .set_context(format!("Command: {:?}", cmd))
         })?;
@@ -206,7 +206,7 @@ impl<'p, 'f> SyncCommand<'p, 'f> {
     }
 }
 
-pub type FileItem = error::Item<File>;
+pub type FileItem = err::Item<File>;
 
 pub struct Files(Vec<FileItem>);
 
@@ -337,7 +337,7 @@ exit: 0
         let (_remains, (items, exit)) = files_parser::files(output).unwrap();
         let first = items[0].as_data().unwrap();
         assert_eq!(first.depot_file, "//depot/dir/file");
-        assert_eq!(exit.as_error(), Some(&error::OperationError::new(0)));
+        assert_eq!(exit.as_error(), Some(&err::OperationError::new(0)));
     }
 
     #[test]
@@ -362,6 +362,6 @@ exit: 0
         let last = items[1].as_data().unwrap();
         assert_eq!(first.depot_file, "//depot/dir/file");
         assert_eq!(last.depot_file, "//depot/dir/file1");
-        assert_eq!(exit.as_error(), Some(&error::OperationError::new(0)));
+        assert_eq!(exit.as_error(), Some(&err::OperationError::new(0)));
     }
 }

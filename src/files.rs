@@ -1,7 +1,7 @@
 use std::vec;
 
-use error;
-use p4;
+use crate::err;
+use crate::p4;
 
 /// List files in the depot.
 ///
@@ -83,7 +83,7 @@ impl<'p, 'f> FilesCommand<'p, 'f> {
     }
 
     /// Run the `files` command.
-    pub fn run(self) -> Result<Files, error::P4Error> {
+    pub fn run(self) -> Result<Files, err::P4Error> {
         let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("files");
         if self.list_revisions {
@@ -102,13 +102,13 @@ impl<'p, 'f> FilesCommand<'p, 'f> {
             cmd.arg(file);
         }
         let data = cmd.output().map_err(|e| {
-            error::ErrorKind::SpawnFailed
+            err::ErrorKind::SpawnFailed
                 .error()
                 .set_cause(e)
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         let (_remains, (mut items, exit)) = files_parser::files(&data.stdout).map_err(|_| {
-            error::ErrorKind::ParseFailed
+            err::ErrorKind::ParseFailed
                 .error()
                 .set_context(format!("Command: {:?}", cmd))
         })?;
@@ -117,7 +117,7 @@ impl<'p, 'f> FilesCommand<'p, 'f> {
     }
 }
 
-pub type FileItem = error::Item<File>;
+pub type FileItem = err::Item<File>;
 
 pub struct Files(Vec<FileItem>);
 

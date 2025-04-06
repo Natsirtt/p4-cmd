@@ -10,7 +10,8 @@ documentation = "https://docs.rs/p4-cmd"
 readme = "README.md"
 categories = ["development-tools", "api-bindings"]
 keywords = ["p4", "perforce"]
+edition = "2024"
 
 [dependencies]
 chrono = "0.4"
-nom = "4.0"
+nom = "6.2.2"

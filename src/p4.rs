@@ -6,11 +6,11 @@ use std::str;
 use chrono;
 use chrono::TimeZone;
 
-use dirs;
-use files;
-use print;
-use sync;
-use where_;
+use crate::dirs;
+use crate::files;
+use crate::print;
+use crate::sync;
+use crate::where_;
 
 #[derive(Clone, Debug)]
 pub struct P4 {
@@ -267,7 +267,7 @@ pub(crate) fn to_timestamp(time: &Time) -> i64 {
 }
 
 pub(crate) fn from_timestamp(timestamp: i64) -> Time {
-    chrono::Utc.timestamp(timestamp, 0)
+    chrono::Utc.timestamp_opt(timestamp, 0).unwrap()
 }
 
 /// Action performed on a file at a given revision.
@@ -331,7 +331,7 @@ impl fmt::Display for Action {
             Action::Import => "import",
             Action::Purge => "purge",
             Action::Archive => "archive",
-            Action::Unknown(ref s) => s.as_str(),
+            Action::Unknown(s) => s.as_str(),
             Action::__Nonexhaustive => unreachable!("This is a private variant"),
         };
         write!(f, "{}", value)
@@ -439,7 +439,7 @@ impl fmt::Display for BaseFileType {
             BaseFileType::Unicode => "unicode",
             BaseFileType::Utf8 => "utf8",
             BaseFileType::Utf16 => "utf16",
-            BaseFileType::Unknown(ref s) => s.as_str(),
+            BaseFileType::Unknown(s) => s.as_str(),
             BaseFileType::__Nonexhaustive => unreachable!("This is a private variant"),
         };
         write!(f, "{}", value)

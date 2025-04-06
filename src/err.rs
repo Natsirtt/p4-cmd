@@ -23,7 +23,7 @@ impl Error for OperationError {
         "Operation failed."
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         None
     }
 }
@@ -89,7 +89,7 @@ impl<T> Item<T> {
     }
 }
 
-type ErrorCause = Error + Send + Sync + 'static;
+type ErrorCause = dyn Error + Send + Sync + 'static;
 
 /// For programmatically processing failures.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -158,9 +158,9 @@ impl Error for P4Error {
         "Staging failed."
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         self.cause.as_ref().map(|c| {
-            let c: &Error = c.as_ref();
+            let c: &dyn Error = c.as_ref();
             c
         })
     }

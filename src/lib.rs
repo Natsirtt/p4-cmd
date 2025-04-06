@@ -7,7 +7,7 @@ mod parser;
 
 pub use p4::*;
 pub mod dirs;
-pub mod error;
+pub mod err;
 pub mod files;
 pub mod print;
 pub mod sync;

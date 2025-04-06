@@ -1,10 +1,10 @@
+use nom::character::is_digit;
 use std::char;
 use std::num;
 use std::str;
 
 use nom;
-
-use error;
+use crate::err;
 
 fn is_newline(c: u8) -> bool {
     let c = char::from_u32(u32::from(c));
@@ -13,26 +13,29 @@ fn is_newline(c: u8) -> bool {
 
 // unsafe: Assumes `input` is ASCII
 unsafe fn i32_from_bytes(input: &[u8]) -> Result<i32, num::ParseIntError> {
-    // nom ensured `input` is only ASCII
-    let input = str::from_utf8_unchecked(input);
-
-    input.parse()
+    unsafe {
+        // nom ensured `input` is only ASCII
+        let input = str::from_utf8_unchecked(input);
+        input.parse()
+    }
 }
 
 // unsafe: Assumes `input` is ASCII
 unsafe fn i64_from_bytes(input: &[u8]) -> Result<i64, num::ParseIntError> {
-    // nom ensured `input` is only ASCII
-    let input = str::from_utf8_unchecked(input);
-
-    input.parse()
+    unsafe {
+        // nom ensured `input` is only ASCII
+        let input = str::from_utf8_unchecked(input);
+        input.parse()
+    }
 }
 
 // unsafe: Assumes `input` is ASCII
 unsafe fn usize_from_bytes(input: &[u8]) -> Result<usize, num::ParseIntError> {
-    // nom ensured `input` is only ASCII
-    let input = str::from_utf8_unchecked(input);
-
-    input.parse()
+    unsafe {
+        // nom ensured `input` is only ASCII
+        let input = str::from_utf8_unchecked(input);
+        input.parse()
+    }
 }
 
 fn str_from_bytes(input: &[u8]) -> Result<&str, str::Utf8Error> {
@@ -41,26 +44,26 @@ fn str_from_bytes(input: &[u8]) -> Result<&str, str::Utf8Error> {
     Ok(input)
 }
 
-pub fn error_to_item<T>(e: Error) -> error::Item<T> {
-    error::Item::Message(error::Message::new(
-        error::MessageLevel::Error,
+pub fn error_to_item<T>(e: Error) -> err::Item<T> {
+    err::Item::Message(err::Message::new(
+        err::MessageLevel::Error,
         e.msg.to_owned(),
     ))
 }
 
-pub fn info_to_item<T>(e: Info) -> error::Item<T> {
-    error::Item::Message(error::Message::new(
-        error::MessageLevel::Info,
+pub fn info_to_item<T>(e: Info) -> err::Item<T> {
+    err::Item::Message(err::Message::new(
+        err::MessageLevel::Info,
         e.msg.to_owned(),
     ))
 }
 
-pub fn exit_to_item<T>(e: Exit) -> error::Item<T> {
-    error::Item::Error(error::OperationError::new(e.code))
+pub fn exit_to_item<T>(e: Exit) -> err::Item<T> {
+    err::Item::Error(err::OperationError::new(e.code))
 }
 
-pub fn data_to_item<T>(d: T) -> error::Item<T> {
-    error::Item::Data(d)
+pub fn data_to_item<T>(d: T) -> err::Item<T> {
+    err::Item::Data(d)
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -90,7 +93,7 @@ fn exit_from_bytes(input: &[u8]) -> Result<Exit, num::ParseIntError> {
 }
 
 named!(pub exit<&[u8], Exit>,
-    map_res!(terminated!(preceded!(tag!(b"exit: "), take_while!(nom::is_digit)), newline), exit_from_bytes)
+    map_res!(terminated!(preceded!(tag!(b"exit: "), take_while!(is_digit)), newline), exit_from_bytes)
 );
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -190,7 +193,7 @@ fn rev_from_bytes(input: &[u8]) -> Result<Rev, num::ParseIntError> {
 }
 
 named!(pub rev<&[u8], Rev>,
-    map_res!(terminated!(preceded!(tag!(b"info1: rev "), take_while!(nom::is_digit)), newline), rev_from_bytes)
+    map_res!(terminated!(preceded!(tag!(b"info1: rev "), take_while!(is_digit)), newline), rev_from_bytes)
 );
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -206,7 +209,7 @@ fn change_from_bytes(input: &[u8]) -> Result<Change, num::ParseIntError> {
 }
 
 named!(pub change<&[u8], Change>,
-    map_res!(terminated!(preceded!(tag!(b"info1: change "), take_while!(nom::is_digit)), newline), change_from_bytes)
+    map_res!(terminated!(preceded!(tag!(b"info1: change "), take_while!(is_digit)), newline), change_from_bytes)
 );
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -250,7 +253,7 @@ fn time_from_bytes(input: &[u8]) -> Result<Time, num::ParseIntError> {
 }
 
 named!(pub time<&[u8], Time>,
-    map_res!(terminated!(preceded!(tag!(b"info1: time "), take_while!(nom::is_digit)), newline), time_from_bytes)
+    map_res!(terminated!(preceded!(tag!(b"info1: time "), take_while!(is_digit)), newline), time_from_bytes)
 );
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -266,7 +269,7 @@ fn file_size_from_bytes(input: &[u8]) -> Result<FileSize, num::ParseIntError> {
 }
 
 named!(pub file_size<&[u8], FileSize>,
-    map_res!(terminated!(preceded!(tag!(b"info1: fileSize "), take_while!(nom::is_digit)), newline), file_size_from_bytes)
+    map_res!(terminated!(preceded!(tag!(b"info1: fileSize "), take_while!(is_digit)), newline), file_size_from_bytes)
 );
 
 fn ignore_from_bytes(_input: &[u8]) -> Result<(), num::ParseIntError> {

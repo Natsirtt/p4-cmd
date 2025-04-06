@@ -1,8 +1,8 @@
 use std::path;
 use std::vec;
 
-use error;
-use p4;
+use crate::err;
+use crate::p4;
 
 /// Show how file names are mapped by the client view
 ///
@@ -47,20 +47,20 @@ impl<'p, 'f> WhereCommand<'p, 'f> {
     }
 
     /// Run the `where` command.
-    pub fn run(self) -> Result<Files, error::P4Error> {
+    pub fn run(self) -> Result<Files, err::P4Error> {
         let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("where");
         for file in self.file {
             cmd.arg(file);
         }
         let data = cmd.output().map_err(|e| {
-            error::ErrorKind::SpawnFailed
+            err::ErrorKind::SpawnFailed
                 .error()
                 .set_cause(e)
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         let (_remains, (mut items, exit)) = where_parser::where_(&data.stdout).map_err(|_| {
-            error::ErrorKind::ParseFailed
+            err::ErrorKind::ParseFailed
                 .error()
                 .set_context(format!("Command: {:?}", cmd))
         })?;
@@ -69,7 +69,7 @@ impl<'p, 'f> WhereCommand<'p, 'f> {
     }
 }
 
-pub type FileItem = error::Item<File>;
+pub type FileItem = err::Item<File>;
 
 pub struct Files(Vec<FileItem>);
 

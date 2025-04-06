@@ -1,7 +1,7 @@
 use std::vec;
 
-use error;
-use p4;
+use crate::err;
+use crate::p4;
 
 /// List depot subdirectories
 ///
@@ -93,7 +93,7 @@ impl<'p, 'f, 's> DirsCommand<'p, 'f, 's> {
     }
 
     /// Run the `dirs` command.
-    pub fn run(self) -> Result<Dirs, error::P4Error> {
+    pub fn run(self) -> Result<Dirs, err::P4Error> {
         let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("dirs");
         if self.client_only {
@@ -115,13 +115,13 @@ impl<'p, 'f, 's> DirsCommand<'p, 'f, 's> {
             cmd.arg(dir);
         }
         let data = cmd.output().map_err(|e| {
-            error::ErrorKind::SpawnFailed
+            err::ErrorKind::SpawnFailed
                 .error()
                 .set_cause(e)
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         let (_remains, (mut items, exit)) = dirs_parser::dirs(&data.stdout).map_err(|_| {
-            error::ErrorKind::ParseFailed
+            err::ErrorKind::ParseFailed
                 .error()
                 .set_context(format!("Command: {:?}", cmd))
         })?;
@@ -130,7 +130,7 @@ impl<'p, 'f, 's> DirsCommand<'p, 'f, 's> {
     }
 }
 
-pub type DirItem = error::Item<Dir>;
+pub type DirItem = err::Item<Dir>;
 
 pub struct Dirs(Vec<DirItem>);
 
